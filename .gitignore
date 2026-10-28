@@ -4,3 +4,8 @@ dist/
 .build/
 .swiftpm/
 outputs/*.app/
+
+# Local AI handoff notes, not published
+CLAUDE.md
+outputs/
+.codex/
