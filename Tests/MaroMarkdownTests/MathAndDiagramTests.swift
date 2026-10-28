@@ -34,6 +34,19 @@ final class MathAndDiagramTests: XCTestCase {
         XCTAssertTrue(html.contains("<code>$a$</code>"))
     }
 
+    func testInlineMathDoesNotCloseInsideCodeSpan() throws {
+        // A stray opening dollar must not pair with a dollar inside a later code span.
+        let html = try render("가격 $5와 $10은 수식이 아니고, 코드 `$a$` 도 그대로입니다.")
+        XCTAssertFalse(html.contains("maro-math"), html)
+        XCTAssertTrue(html.contains("$5와 $10은"))
+        XCTAssertTrue(html.contains("<code>$a$</code>"))
+    }
+
+    func testInlineMathDoesNotCloseInsideEscapedDollar() throws {
+        let html = try render("값 $x 그리고 \\$y\\$ 끝")
+        XCTAssertFalse(html.contains("maro-math"), html)
+    }
+
     func testFencedCodeKeepsDollarSigns() throws {
         let html = try render("```sh\necho $HOME $PATH\n```\n\n~~~\n$x$\n~~~")
         XCTAssertFalse(html.contains("maro-math"))

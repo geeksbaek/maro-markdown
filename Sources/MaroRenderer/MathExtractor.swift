@@ -126,9 +126,11 @@ struct MathExtractor {
 
         // $…$ inline math: no space just inside either dollar, and the closing dollar
         // must not be followed by a digit, so prices like "$5 and $10" stay text.
+        // A backtick ends the search: the closing dollar is never inside a code span,
+        // and TeX that needs backticks uses the $`…`$ form.
         guard let first = next, !first.isWhitespace else { return nil }
         var cursor = index + 1
-        while cursor < chars.count, chars[cursor] != "\n" {
+        while cursor < chars.count, chars[cursor] != "\n", chars[cursor] != "`" {
             if chars[cursor] == "\\" { cursor += 2; continue }
             if chars[cursor] == "$" {
                 let before = chars[cursor - 1]

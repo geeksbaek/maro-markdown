@@ -62,9 +62,15 @@ public enum PreviewPage {
             .markdown-body .task-list-item { list-style-type: none; }
             .markdown-body .task-list-item input[type=checkbox] { margin: 0 .5em .2em -1.5em; vertical-align: middle; }
             .markdown-body div.maro-math { margin: 0 0 16px; overflow-x: auto; overflow-y: hidden; }
+            .markdown-body .maro-mermaid { margin: 0 0 16px; overflow-x: auto; }
+            .markdown-body .maro-mermaid[data-rendered] { text-align: center; }
+            /* Before the scripts run (and always in Quick Look, which cannot run them),
+               math and diagrams show their source: inline as code, blocks as code blocks. */
             .markdown-body .maro-math:not([data-rendered]),
-            .markdown-body .maro-mermaid:not([data-rendered]) { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; white-space: pre-wrap; }
-            .markdown-body .maro-mermaid { margin: 0 0 16px; text-align: center; overflow-x: auto; }
+            .markdown-body .maro-mermaid:not([data-rendered]) { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 85%; }
+            .markdown-body span.maro-math:not([data-rendered]) { padding: .2em .4em; border-radius: 6px; background-color: var(--bgColor-neutral-muted, rgba(129,139,152,.12)); }
+            .markdown-body div.maro-math:not([data-rendered]),
+            .markdown-body .maro-mermaid:not([data-rendered]) { padding: 16px; border-radius: 6px; line-height: 1.45; white-space: pre; text-align: left; background-color: var(--bgColor-muted, #f6f8fa); }
             .markdown-body .maro-mermaid svg { max-width: 100%; height: auto; }
             .markdown-body .maro-error { color: var(--fgColor-danger, #d1242f); text-align: left; }
             @media (max-width: 620px) { .markdown-body { padding: 24px 20px 72px; } }
