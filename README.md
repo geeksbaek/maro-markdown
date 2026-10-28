@@ -48,10 +48,10 @@ The script builds with SwiftPM, assembles the app bundle and its Quick Look exte
 
 To make Maro Markdown the default app for `.md` files, select a Markdown file in Finder, choose **Get Info → Open with → Maro Markdown**, and click **Change All…**.
 
-If Quick Look still shows plain text after installing, reset its cache:
+If Quick Look still shows plain text or only a file-info card after installing or updating, reset its cache and restart Finder, which remembers the previous result:
 
 ```sh
-qlmanage -r && qlmanage -r cache
+qlmanage -r && qlmanage -r cache && killall Finder
 ```
 
 and check that Maro Markdown is enabled in **System Settings → General → Login Items & Extensions → Quick Look**.

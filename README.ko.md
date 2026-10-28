@@ -37,10 +37,10 @@ GitHub과 같은 방식으로 GitHub Flavored Markdown을 렌더링하는 macOS�
 
 `.md` 파일을 항상 Maro Markdown으로 열려면, Finder에서 Markdown 파일을 선택하고 **정보 가져오기 → 다음으로 열기 → Maro Markdown**을 고른 뒤 **모두 변경…**을 누릅니다.
 
-설치 후에도 Quick Look이 원문 텍스트로 보이면 캐시를 초기화합니다.
+설치나 업데이트 후에도 Quick Look이 원문 텍스트나 파일 정보 카드만 보여 주면, 캐시를 초기화하고 Finder를 재시작합니다. Finder가 이전 결과를 기억하고 있기 때문입니다.
 
 ```sh
-qlmanage -r && qlmanage -r cache
+qlmanage -r && qlmanage -r cache && killall Finder
 ```
 
 그리고 **시스템 설정 → 일반 → 로그인 항목 및 확장 프로그램 → Quick Look**에서 Maro Markdown이 켜져 있는지 확인합니다.
