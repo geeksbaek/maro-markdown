@@ -28,9 +28,10 @@ public enum PreviewPage {
         return result
     }()
 
-    /// - Parameter offline: Quick Look passes true, with images already removed by
-    ///   `OfflineImages`, and the CSP then allows only inline `data:` images.
+    /// - Parameter offline: For Quick Look. Images become alt-text placeholders (see
+    ///   `OfflineImages`) and the CSP allows only inline `data:` images.
     public static func shell(content: String, scale: Double = 1, offline: Bool = false) -> String {
+        let body = offline ? OfflineImages.strip(content) : content
         let imageSources = offline ? "data:" : "'self' file: data: https: http:"
         return """
         <!doctype html>
@@ -67,8 +68,8 @@ public enum PreviewPage {
             .markdown-body div.maro-math { margin: 0 0 16px; overflow-x: auto; overflow-y: hidden; }
             .markdown-body .maro-mermaid { margin: 0 0 16px; overflow-x: auto; }
             .markdown-body .maro-mermaid[data-rendered] { text-align: center; }
-            /* Before the scripts run (and always in Quick Look, which cannot run them),
-               math and diagrams show their source: inline as code, blocks as code blocks. */
+            /* Until the scripts render them, math and diagrams show their source:
+               inline as code, blocks as code blocks. */
             .markdown-body .maro-math:not([data-rendered]),
             .markdown-body .maro-mermaid:not([data-rendered]) { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 85%; }
             .markdown-body span.maro-math:not([data-rendered]) { padding: .2em .4em; border-radius: 6px; background-color: var(--bgColor-neutral-muted, rgba(129,139,152,.12)); }
@@ -81,7 +82,7 @@ public enum PreviewPage {
             @media (max-width: 620px) { .markdown-body { padding: 24px 20px 72px; } }
             @media print { .markdown-body { max-width: none; padding: 0; } }
           </style>
-        </head><body><article id="markdown" class="markdown-body">\(content)</article></body></html>
+        </head><body><article id="markdown" class="markdown-body">\(body)</article></body></html>
         """
     }
 }
@@ -91,17 +92,25 @@ public enum PreviewPage {
 public enum PreviewScripts {
     static let vendorURL: URL? = Bundle.module.url(forResource: "vendor", withExtension: nil)
 
+    private static func load(_ path: String) -> String? {
+        vendorURL.flatMap { try? String(contentsOf: $0.appendingPathComponent(path), encoding: .utf8) }
+    }
+
+    private static let katex = load("katex/katex.min.js")
+    private static let mermaid = load("mermaid/mermaid.min.js")
+    private static let renderer = load("render.js")
+
     /// Library sources in load order: KaTeX, Mermaid, then the renderer that uses them.
-    public static let sources: [String] = {
-        guard let vendor = vendorURL else { return [] }
-        return ["katex/katex.min.js", "mermaid/mermaid.min.js", "render.js"].compactMap {
-            try? String(contentsOf: vendor.appendingPathComponent($0), encoding: .utf8)
-        }
-    }()
+    public static var sources: [String] { sources(for: .all) }
+
+    /// The libraries a page needs. The renderer skips any library that is not loaded.
+    static func sources(for features: PreviewWebView.Features) -> [String] {
+        [features.math ? katex : nil, features.diagrams ? mermaid : nil, renderer].compactMap { $0 }
+    }
 
     /// Re-renders math and diagrams after the preview content changes.
     public static let refresh = "window.maroRender && window.maroRender();"
 
-    /// Message handler name render.js posts to after its first render, when a host registers it.
-    public static let renderedMessage = "maroRendered"
+    /// Resolves once the first render after page load has finished.
+    public static let awaitFirstRender = "if (window.maroReady) { await window.maroReady; }"
 }

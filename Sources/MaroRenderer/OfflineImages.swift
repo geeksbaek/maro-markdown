@@ -8,10 +8,10 @@ import Foundation
 /// the load, so the page stays blank; a CSP refusal is not enough. Relative paths cannot be
 /// read there either. Only cmark's `<img>` output references resources, because raw HTML
 /// is omitted, so images are the only element that needs rewriting.
-public enum OfflineImages {
+enum OfflineImages {
     private static let image = try! NSRegularExpression(pattern: "<img src=\"([^\"]*)\" alt=\"([^\"]*)\"[^>]*>")
 
-    public static func strip(_ html: String) -> String {
+    static func strip(_ html: String) -> String {
         guard html.contains("<img") else { return html }
         let source = html as NSString
         var result = ""

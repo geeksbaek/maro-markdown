@@ -19,17 +19,8 @@ struct MarkdownPreview: NSViewRepresentable {
     }
 
     func makeNSView(context: Context) -> WKWebView {
-        let configuration = WKWebViewConfiguration()
-        configuration.websiteDataStore = .nonPersistent()
-        configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
-        // Math and diagram libraries are injected natively; the page CSP blocks all page scripts.
-        for source in PreviewScripts.sources {
-            configuration.userContentController.addUserScript(
-                WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-            )
-        }
-
-        let view = WKWebView(frame: .zero, configuration: configuration)
+        // The document changes as it is edited, so every library is loaded up front.
+        let view = WKWebView(frame: .zero, configuration: PreviewWebView.configuration())
         view.navigationDelegate = context.coordinator
         view.uiDelegate = context.coordinator
         view.allowsBackForwardNavigationGestures = false
@@ -129,19 +120,7 @@ struct MarkdownPreview: NSViewRepresentable {
         private func routeLink(_ url: URL, in webView: WKWebView) -> Bool {
             if let fragment = url.fragment,
                url.scheme == "about" || (url.isFileURL && url.path == baseURL?.path) {
-                let identifier = fragment.removingPercentEncoding ?? fragment
-                // Headings use GitHub's prefixed ids; footnotes keep cmark's bare ids.
-                if let encoded = try? JSONEncoder().encode([HeadingAnchors.idPrefix + identifier, identifier]),
-                   let literal = String(data: encoded, encoding: .utf8) {
-                    webView.evaluateJavaScript("""
-                    (() => {
-                      const root = document.getElementById('markdown');
-                      const target = \(literal).map(id => document.getElementById(id))
-                        .find(node => node && node !== root);
-                      target?.scrollIntoView({behavior: 'smooth'});
-                    })();
-                    """, completionHandler: nil)
-                }
+                PreviewWebView.scroll(webView, toFragment: fragment)
                 return false
             }
 
