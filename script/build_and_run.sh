@@ -74,6 +74,9 @@ QL_BUNDLE="$APP_CONTENTS/PlugIns/$QL_NAME.appex"
 mkdir -p "$QL_BUNDLE/Contents/MacOS" "$QL_BUNDLE/Contents/Resources"
 cp "$BUILD_DIR/$QL_NAME" "$QL_BUNDLE/Contents/MacOS/$QL_NAME"
 copy_resource_bundle MaroMarkdown_MaroRenderer "$QL_BUNDLE/Contents/Resources"
+# Quick Look cannot run the preview scripts, so only KaTeX's stylesheet and fonts are kept.
+QL_VENDOR="$QL_BUNDLE/Contents/Resources/MaroMarkdown_MaroRenderer.bundle/Contents/Resources/vendor"
+rm -rf "$QL_VENDOR/mermaid" "$QL_VENDOR/render.js" "$QL_VENDOR/katex/katex.min.js"
 
 cat >"$QL_BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

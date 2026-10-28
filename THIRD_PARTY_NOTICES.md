@@ -45,3 +45,16 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+The preview bundles KaTeX 0.19.0 <https://github.com/KaTeX/KaTeX> for math
+(`katex.min.js`, `katex.min.css` and the woff2 fonts in
+`Sources/MaroRenderer/Resources/vendor/katex/`), distributed under the MIT
+License. Copyright (c) 2013-2020 Khan Academy and other contributors. The full
+license is in `vendor/katex/LICENSE`.
+
+The preview bundles Mermaid 12.2.0 <https://github.com/mermaid-js/mermaid> for
+diagrams (`mermaid.min.js` in `Sources/MaroRenderer/Resources/vendor/mermaid/`),
+distributed under the MIT License. Copyright (c) 2014 - 2022 Knut Sveidqvist.
+The full license is in `vendor/mermaid/LICENSE`. The Mermaid bundle includes
+its own dependencies; their license comments, including DOMPurify (Apache
+License 2.0 or Mozilla Public License 2.0), are kept in the bundle as shipped.

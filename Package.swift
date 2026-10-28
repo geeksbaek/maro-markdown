@@ -17,7 +17,11 @@ let package = Package(
         .target(
             name: "MaroRenderer",
             dependencies: ["CGFM"],
-            resources: [.process("Resources")]
+            resources: [
+                .process("Resources/github-markdown.css"),
+                // KaTeX, Mermaid and the preview renderer, kept as-is with their folder layout.
+                .copy("Resources/vendor")
+            ]
         ),
         .executableTarget(
             name: "MaroMarkdown",

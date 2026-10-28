@@ -24,8 +24,10 @@ public struct MarkdownRenderer {
         _ markdown: String,
         includeSourcePositions: Bool = false
     ) throws -> String {
-        let byteCount = markdown.utf8.count
-        let output = markdown.withCString { bytes in
+        var math = MathExtractor()
+        let source = math.extract(markdown)
+        let byteCount = source.utf8.count
+        let output = source.withCString { bytes in
             cgfm_render_html(bytes, byteCount, includeSourcePositions ? 1 : 0)
         }
         guard let output else {
@@ -35,7 +37,37 @@ public struct MarkdownRenderer {
         guard let html = String(validatingCString: output) else {
             throw MarkdownRenderError.invalidOutput
         }
-        return HeadingAnchors.addingIDs(to: html)
+        // Math is restored before heading ids, so a formula in a heading is slugged
+        // from its TeX text rather than from the placeholder token.
+        return DiagramBlocks.convert(HeadingAnchors.addingIDs(to: math.restore(html)))
+    }
+}
+
+/// Turns ```math and ```mermaid code blocks into elements the preview scripts render.
+/// The code text is already HTML-escaped by cmark and is kept as-is.
+enum DiagramBlocks {
+    private static let block = try! NSRegularExpression(
+        pattern: "<pre(?: [^>]*)?><code class=\"language-(math|mermaid)\">(.*?)</code></pre>",
+        options: [.dotMatchesLineSeparators]
+    )
+
+    static func convert(_ html: String) -> String {
+        guard html.contains("language-math") || html.contains("language-mermaid") else { return html }
+        let source = html as NSString
+        var result = ""
+        var copied = 0
+        for match in block.matches(in: html, range: NSRange(location: 0, length: source.length)) {
+            let kind = source.substring(with: match.range(at: 1))
+            let body = source.substring(with: match.range(at: 2))
+            let element = kind == "math"
+                ? "<div class=\"maro-math\" data-display=\"block\">\(body)</div>"
+                : "<div class=\"maro-mermaid\">\(body)</div>"
+            result += source.substring(with: NSRange(location: copied, length: match.range.location - copied))
+            result += element
+            copied = NSMaxRange(match.range)
+        }
+        result += source.substring(from: copied)
+        return result
     }
 }
 
