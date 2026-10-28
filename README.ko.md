@@ -8,12 +8,14 @@ GitHub과 같은 방식으로 GitHub Flavored Markdown을 렌더링하는 macOS�
 - GitHub Flavored Markdown: 표, 작업 목록, 취소선, 자동 링크, 각주
 - GitHub 알림 (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`)
 - GitHub과 같은 제목 앵커 id를 만들어 `#제목` 링크가 그대로 동작
+- GitHub 문법의 수식(`$…$`, `` $`…`$ ``, `$$…$$`, ```` ```math ````)을 KaTeX로 렌더링
+- ```` ```mermaid ```` 블록의 Mermaid 다이어그램, 라이트·다크 모드에 맞춰 표시
 - GitHub의 Markdown 스타일시트, 라이트·다크 모드
 - Finder Quick Look 미리보기: `.md` 파일을 선택하고 스페이스바를 누르면 렌더링된 화면으로 표시
 - 모드를 바꾸거나 창을 닫을 때 입력기(한국어·일본어·중국어) 조합 중인 글자를 확정해 글자가 사라지지 않음
 - 저장할 때 원래 인코딩 유지 (UTF-8, BOM 있는 UTF-8, UTF-16 LE/BE)
 
-렌더링은 macOS에 들어 있는 `libcmark-gfm`으로 기기 안에서만 이루어집니다. 문서는 어디로도 전송되지 않습니다.
+렌더링은 macOS에 들어 있는 `libcmark-gfm`과 앱에 포함된 KaTeX·Mermaid로 기기 안에서만 이루어집니다. 문서는 어디로도 전송되지 않습니다. 문서 안의 스크립트도 실행되지 않습니다. 미리보기는 페이지의 모든 스크립트를 막고, 앱에 포함된 스크립트만 앱이 직접 넣습니다.
 
 ## 요구 사항
 
@@ -35,10 +37,10 @@ GitHub과 같은 방식으로 GitHub Flavored Markdown을 렌더링하는 macOS�
 
 `.md` 파일을 항상 Maro Markdown으로 열려면, Finder에서 Markdown 파일을 선택하고 **정보 가져오기 → 다음으로 열기 → Maro Markdown**을 고른 뒤 **모두 변경…**을 누릅니다.
 
-설치 후에도 Quick Look이 원문 텍스트로 보이면 캐시를 초기화합니다.
+설치나 업데이트 후에도 Quick Look이 원문 텍스트나 파일 정보 카드만 보여 주면, 캐시를 초기화하고 Finder를 재시작합니다. Finder가 이전 결과를 기억하고 있기 때문입니다.
 
 ```sh
-qlmanage -r && qlmanage -r cache
+qlmanage -r && qlmanage -r cache && killall Finder
 ```
 
 그리고 **시스템 설정 → 일반 → 로그인 항목 및 확장 프로그램 → Quick Look**에서 Maro Markdown이 켜져 있는지 확인합니다.
@@ -60,7 +62,7 @@ ditto "dist/Maro Markdown.app" "/Applications/Maro Markdown.app"
 swift test
 ```
 
-렌더러, GitHub 알림 변환, 제목 id(GitHub Markdown API에서 실측한 54개 사례 포함), 텍스트 인코딩, 편집기의 입력기 조합 처리, Quick Look 이미지 경로 처리를 검사합니다.
+렌더러, GitHub 알림 변환, 제목 id(GitHub Markdown API에서 실측한 54개 사례 포함), 수식·다이어그램 추출, 화면 밖 WebKit에서 수식과 Mermaid가 그려지고 페이지 스크립트는 막히는지, 텍스트 인코딩, 편집기의 입력기 조합 처리, Quick Look 이미지 경로 처리를 검사합니다.
 
 ## 단축키
 
@@ -75,13 +77,15 @@ swift test
 
 ## GitHub과 다른 점
 
-- 렌더링하지 않는 것: 코드 구문 강조, 수식, Mermaid 다이어그램, 이모지 단축어(`:smile:`), `#123`·`@user` 같은 GitHub 참조
+- 렌더링하지 않는 것: 코드 구문 강조, 이모지 단축어(`:smile:`), GeoJSON·TopoJSON·STL 블록, `#123`·`@user` 같은 GitHub 참조
+- 수식은 KaTeX로 그리고 GitHub은 MathJax를 써서, 드물게 쓰는 일부 TeX 명령은 결과가 다를 수 있습니다.
 - 원본 HTML은 렌더링하지 않습니다. GitHub이 허용하는 `<details>`, `<kbd>`도 마찬가지입니다.
 - 알림 제목과 제목 링크에 Octicon 아이콘이 없습니다.
 
 ## 알려진 제한
 
 - **Quick Look에서 상대 경로 이미지가 보이지 않습니다.** Quick Look 확장은 샌드박스 안에서 Markdown 파일 자체만 읽을 수 있어서, 옆에 있는 이미지(`![](images/a.png)`)는 스페이스바 미리보기에서 빈칸으로 나옵니다. 앱에서는 정상으로 보입니다.
+- **Quick Look에서는 수식과 Mermaid가 원문으로 보입니다.** Quick Look은 확장이 렌더링 스크립트를 실행할 방법을 주지 않습니다. 앱에서는 둘 다 렌더링됩니다.
 - 4 MB보다 큰 파일은 Quick Look 미리보기에서 잘립니다.
 - Developer ID 서명과 공증이 없습니다. 위의 설치 안내를 참고하세요.
 

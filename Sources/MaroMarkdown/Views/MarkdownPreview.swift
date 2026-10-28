@@ -22,6 +22,12 @@ struct MarkdownPreview: NSViewRepresentable {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
+        // Math and diagram libraries are injected natively; the page CSP blocks all page scripts.
+        for source in PreviewScripts.sources {
+            configuration.userContentController.addUserScript(
+                WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+            )
+        }
 
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.navigationDelegate = context.coordinator
@@ -84,6 +90,7 @@ struct MarkdownPreview: NSViewRepresentable {
               const progress = scrollY / oldMax;
               root.innerHTML = \(literal);
               document.documentElement.style.setProperty('--preview-scale', '\(scale)');
+              \(PreviewScripts.refresh)
               requestAnimationFrame(() => {
                 const newMax = Math.max(0, document.documentElement.scrollHeight - innerHeight);
                 scrollTo(0, progress * newMax);
