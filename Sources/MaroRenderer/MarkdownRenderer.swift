@@ -1,11 +1,11 @@
 import CGFM
 import Foundation
 
-enum MarkdownRenderError: LocalizedError {
+public enum MarkdownRenderError: LocalizedError {
     case renderingFailed
     case invalidOutput
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .renderingFailed:
             return "마크다운을 렌더링하지 못했습니다."
@@ -15,12 +15,12 @@ enum MarkdownRenderError: LocalizedError {
     }
 }
 
-struct MarkdownRenderer {
-    static var engineVersion: String {
+public struct MarkdownRenderer {
+    public static var engineVersion: String {
         String(cString: cgfm_version_string())
     }
 
-    static func renderHTML(
+    public static func renderHTML(
         _ markdown: String,
         includeSourcePositions: Bool = false
     ) throws -> String {
@@ -40,7 +40,7 @@ struct MarkdownRenderer {
 }
 
 /// Gives headings the same `id` slugs that GitHub uses for `#fragment` links.
-enum HeadingAnchors {
+public enum HeadingAnchors {
     // Safe only because cmark-gfm runs without CMARK_OPT_UNSAFE: raw HTML is omitted and
     // code text is escaped, so a literal `<hN` can only come from a real heading.
     // Enabling unsafe HTML would break this assumption.
@@ -50,7 +50,7 @@ enum HeadingAnchors {
     )
     private static let tag = try! NSRegularExpression(pattern: "<[^>]*>")
 
-    static func addingIDs(to html: String) -> String {
+    public static func addingIDs(to html: String) -> String {
         let source = html as NSString
         let matches = heading.matches(in: html, range: NSRange(location: 0, length: source.length))
         guard !matches.isEmpty else { return html }
@@ -69,7 +69,7 @@ enum HeadingAnchors {
         return result as String
     }
 
-    static func plainText(_ fragment: String) -> String {
+    public static func plainText(_ fragment: String) -> String {
         let stripped = tag.stringByReplacingMatches(
             in: fragment,
             range: NSRange(location: 0, length: (fragment as NSString).length),
@@ -85,10 +85,12 @@ enum HeadingAnchors {
 }
 
 /// Port of github-slugger 2.0.0, the slug algorithm GitHub uses for heading anchors.
-struct Slugger {
+public struct Slugger {
     private var occurrences: [String: Int] = [:]
 
-    mutating func slug(_ value: String) -> String {
+    public init() {}
+
+    public mutating func slug(_ value: String) -> String {
         let original = Self.slug(value)
         var result = original
         while occurrences[result] != nil {
@@ -99,7 +101,7 @@ struct Slugger {
         return result
     }
 
-    static func slug(_ value: String) -> String {
+    public static func slug(_ value: String) -> String {
         var scalars = String.UnicodeScalarView()
         for scalar in value.lowercased().unicodeScalars where isKept(scalar) {
             scalars.append(scalar == " " ? "-" : scalar)

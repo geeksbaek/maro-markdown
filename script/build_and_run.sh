@@ -53,13 +53,63 @@ mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_DIR/$APP_NAME" "$APP_MACOS/$APP_NAME"
 chmod +x "$APP_MACOS/$APP_NAME"
 
-RESOURCE_BUNDLE="$BUILD_DIR/MaroMarkdown_MaroMarkdown.bundle"
-if [[ -d "$RESOURCE_BUNDLE" ]]; then
-  /usr/bin/ditto "$RESOURCE_BUNDLE" "$APP_RESOURCES/$(basename "$RESOURCE_BUNDLE")"
-else
-  echo "Missing SwiftPM resource bundle: $RESOURCE_BUNDLE" >&2
-  exit 1
-fi
+copy_resource_bundle() {
+  local bundle="$BUILD_DIR/$1.bundle"
+  if [[ ! -d "$bundle" ]]; then
+    echo "Missing SwiftPM resource bundle: $bundle" >&2
+    exit 1
+  fi
+  /usr/bin/ditto "$bundle" "$2/$1.bundle"
+}
+
+copy_resource_bundle MaroMarkdown_MaroMarkdown "$APP_RESOURCES"
+copy_resource_bundle MaroMarkdown_MaroRenderer "$APP_RESOURCES"
+
+# Quick Look preview extension (Finder space bar). SwiftPM cannot build app
+# extensions, so the executable is wrapped in an .appex here.
+QL_NAME="MaroQuickLook"
+QL_BUNDLE="$APP_CONTENTS/PlugIns/$QL_NAME.appex"
+mkdir -p "$QL_BUNDLE/Contents/MacOS" "$QL_BUNDLE/Contents/Resources"
+cp "$BUILD_DIR/$QL_NAME" "$QL_BUNDLE/Contents/MacOS/$QL_NAME"
+copy_resource_bundle MaroMarkdown_MaroRenderer "$QL_BUNDLE/Contents/Resources"
+
+cat >"$QL_BUNDLE/Contents/Info.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleExecutable</key><string>$QL_NAME</string>
+  <key>CFBundleIdentifier</key><string>$BUNDLE_ID.quicklook</string>
+  <key>CFBundleName</key><string>$DISPLAY_NAME Quick Look</string>
+  <key>CFBundleDisplayName</key><string>$DISPLAY_NAME</string>
+  <key>CFBundlePackageType</key><string>XPC!</string>
+  <key>CFBundleShortVersionString</key><string>1.0.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
+  <key>NSExtension</key>
+  <dict>
+    <key>NSExtensionPointIdentifier</key><string>com.apple.quicklook.preview</string>
+    <key>NSExtensionPrincipalClass</key><string>$QL_NAME.PreviewProvider</string>
+    <key>NSExtensionAttributes</key>
+    <dict>
+      <key>QLIsDataBasedPreview</key><true/>
+      <key>QLSupportsSearchableItems</key><false/>
+      <key>QLSupportedContentTypes</key>
+      <array><string>net.daringfireball.markdown</string></array>
+    </dict>
+  </dict>
+</dict></plist>
+PLIST
+
+# Extensions must be sandboxed; the previewed file is granted by Quick Look.
+QL_ENTITLEMENTS="$ROOT_DIR/work/$QL_NAME.entitlements"
+cat >"$QL_ENTITLEMENTS" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>com.apple.security.app-sandbox</key><true/>
+  <key>com.apple.security.files.user-selected.read-only</key><true/>
+</dict></plist>
+PLIST
 
 if [[ -f "$ROOT_DIR/Sources/MaroMarkdown/Resources/AppIcon.icns" ]]; then
   cp "$ROOT_DIR/Sources/MaroMarkdown/Resources/AppIcon.icns" "$APP_RESOURCES/AppIcon.icns"
@@ -92,7 +142,9 @@ cat >"$APP_CONTENTS/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 
-/usr/bin/plutil -lint "$APP_CONTENTS/Info.plist"
+/usr/bin/plutil -lint "$APP_CONTENTS/Info.plist" "$QL_BUNDLE/Contents/Info.plist"
+# Sign inside-out: the extension first, then the app that contains it.
+/usr/bin/codesign --force --sign - --entitlements "$QL_ENTITLEMENTS" "$QL_BUNDLE"
 /usr/bin/codesign --force --sign - "$APP_BUNDLE"
 
 open_app() {
