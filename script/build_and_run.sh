@@ -6,8 +6,8 @@ APP_NAME="MaroMarkdown"
 DISPLAY_NAME="Maro Markdown"
 BUNDLE_ID="io.github.geeksbaek.maromarkdown"
 MIN_SYSTEM_VERSION="27.0"
-APP_VERSION="1.0.0"
-BUILD_NUMBER="1"
+APP_VERSION="1.1.0"
+BUILD_NUMBER="2"
 BUILD_CONFIGURATION="${MARO_BUILD_CONFIGURATION:-debug}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -140,6 +140,19 @@ cat >"$APP_CONTENTS/Info.plist" <<PLIST
 PLIST
 
 /usr/bin/plutil -lint "$APP_CONTENTS/Info.plist" "$QL_BUNDLE/Contents/Info.plist"
+
+if [[ "$BUILD_CONFIGURATION" == "release" ]]; then
+  # Debug symbols record absolute build paths (the builder's home folder), so release
+  # executables are stripped before signing, and the build fails if any path remains.
+  for executable in "$APP_MACOS/$APP_NAME" "$QL_BUNDLE/Contents/MacOS/$QL_NAME"; do
+    /usr/bin/strip -S -x "$executable"
+    if /usr/bin/grep -a -q -F "$ROOT_DIR" "$executable" || /usr/bin/grep -a -q -F "$HOME" "$executable"; then
+      echo "Release executable still contains a local build path: $executable" >&2
+      exit 1
+    fi
+  done
+fi
+
 # Sign inside-out: the extension first, then the app that contains it.
 /usr/bin/codesign --force --sign - --entitlements "$QL_ENTITLEMENTS" "$QL_BUNDLE"
 /usr/bin/codesign --force --sign - "$APP_BUNDLE"
