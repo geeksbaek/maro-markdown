@@ -118,8 +118,7 @@ struct MarkdownPreview: NSViewRepresentable {
         }
 
         private func routeLink(_ url: URL, in webView: WKWebView) -> Bool {
-            if let fragment = url.fragment,
-               url.scheme == "about" || (url.isFileURL && url.path == baseURL?.path) {
+            if let fragment = PreviewWebView.inPageFragment(of: url, baseURL: baseURL) {
                 PreviewWebView.scroll(webView, toFragment: fragment)
                 return false
             }

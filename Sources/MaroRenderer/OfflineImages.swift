@@ -9,23 +9,32 @@ import Foundation
 /// read there either. Only cmark's `<img>` output references resources, because raw HTML
 /// is omitted, so images are the only element that needs rewriting.
 enum OfflineImages {
-    private static let image = try! NSRegularExpression(pattern: "<img src=\"([^\"]*)\" alt=\"([^\"]*)\"[^>]*>")
+    private static let image = try! NSRegularExpression(pattern: "<img\\b[^>]*>", options: [.caseInsensitive])
+    private static let source = try! NSRegularExpression(pattern: "\\bsrc=\"([^\"]*)\"", options: [.caseInsensitive])
+    private static let alt = try! NSRegularExpression(pattern: "\\balt=\"([^\"]*)\"", options: [.caseInsensitive])
 
     static func strip(_ html: String) -> String {
-        guard html.contains("<img") else { return html }
-        let source = html as NSString
+        let text = html as NSString
         var result = ""
         var copied = 0
-        for match in image.matches(in: html, range: NSRange(location: 0, length: source.length)) {
-            let src = source.substring(with: match.range(at: 1))
-            guard !src.hasPrefix("data:") else { continue }
+        for match in image.matches(in: html, range: NSRange(location: 0, length: text.length)) {
+            let tag = text.substring(with: match.range)
+            guard attribute(source, in: tag)?.hasPrefix("data:") != true else { continue }
             // The alt text is already HTML-escaped by cmark.
-            let alt = source.substring(with: match.range(at: 2))
-            result += source.substring(with: NSRange(location: copied, length: match.range.location - copied))
-            result += "<span class=\"maro-image-placeholder\">\(alt.isEmpty ? "image" : alt)</span>"
+            let label = attribute(alt, in: tag).flatMap { $0.isEmpty ? nil : $0 } ?? "image"
+            result += text.substring(with: NSRange(location: copied, length: match.range.location - copied))
+            result += "<span class=\"maro-image-placeholder\">\(label)</span>"
             copied = NSMaxRange(match.range)
         }
-        result += source.substring(from: copied)
+        result += text.substring(from: copied)
         return result
+    }
+
+    private static func attribute(_ pattern: NSRegularExpression, in tag: String) -> String? {
+        let text = tag as NSString
+        guard let match = pattern.firstMatch(in: tag, range: NSRange(location: 0, length: text.length)) else {
+            return nil
+        }
+        return text.substring(with: match.range(at: 1))
     }
 }

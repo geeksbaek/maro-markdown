@@ -11,9 +11,10 @@ public enum PreviewWebView {
 
         public static let all = Features(math: true, diagrams: true)
 
-        /// Only the libraries a rendered page actually uses.
+        /// Only the libraries a rendered page actually uses. Matching the class attribute,
+        /// not the bare name, keeps document text that mentions it from counting.
         public init(html: String) {
-            self.init(math: html.contains("maro-math"), diagrams: html.contains("maro-mermaid"))
+            self.init(math: html.contains("class=\"maro-math\""), diagrams: html.contains("class=\"maro-mermaid\""))
         }
 
         public init(math: Bool, diagrams: Bool) {
@@ -35,6 +36,16 @@ public enum PreviewWebView {
             )
         }
         return configuration
+    }
+
+    /// The `#fragment` of a link that points into the page itself, or nil for links to other
+    /// documents. A page loaded with `baseURL` resolves `#x` to the base folder's URL, so a
+    /// link to `other.md#x` has a different path and is not in-page.
+    public static func inPageFragment(of url: URL, baseURL: URL?) -> String? {
+        guard let fragment = url.fragment else { return nil }
+        if url.scheme == "about" { return fragment }
+        guard url.isFileURL, let baseURL else { return nil }
+        return url.standardizedFileURL.path == baseURL.standardizedFileURL.path ? fragment : nil
     }
 
     /// Scrolls to an in-page `#fragment`. Headings use GitHub's prefixed ids

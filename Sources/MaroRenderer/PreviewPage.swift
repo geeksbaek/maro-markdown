@@ -28,9 +28,12 @@ public enum PreviewPage {
         return result
     }()
 
-    /// - Parameter offline: For Quick Look. Images become alt-text placeholders (see
-    ///   `OfflineImages`) and the CSP allows only inline `data:` images.
-    public static func shell(content: String, scale: Double = 1, offline: Bool = false) -> String {
+    /// - Parameters:
+    ///   - offline: For Quick Look. Images become alt-text placeholders (see
+    ///     `OfflineImages`) and the CSP allows only inline `data:` images.
+    ///   - math: Whether to include KaTeX's stylesheet and fonts (a few hundred KB). The app
+    ///     keeps it on because edits can add math without reloading the page.
+    public static func shell(content: String, scale: Double = 1, offline: Bool = false, math: Bool = true) -> String {
         let body = offline ? OfflineImages.strip(content) : content
         let imageSources = offline ? "data:" : "'self' file: data: https: http:"
         return """
@@ -40,7 +43,7 @@ public enum PreviewPage {
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src \(imageSources); style-src 'unsafe-inline'; font-src data:; script-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
           <style>\(css)</style>
-          <style>\(katexCSS)</style>
+          <style>\(math ? katexCSS : "")</style>
           <style>
             :root { color-scheme: light dark; --preview-scale: \(scale); }
             html { scroll-behavior: auto; }
