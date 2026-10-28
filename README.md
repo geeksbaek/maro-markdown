@@ -1,5 +1,7 @@
 # Maro Markdown
 
+English | [한국어](README.ko.md)
+
 A native macOS Markdown editor and viewer that renders GitHub Flavored Markdown the way GitHub does, with careful handling of Korean, Japanese, and Chinese text.
 
 - Edit, side-by-side, and preview modes
@@ -17,16 +19,30 @@ Rendering happens locally with the `libcmark-gfm` that ships with macOS. Documen
 
 - macOS 27 or later (the app links the system `libcmark-gfm`)
 - Apple Silicon (arm64)
-- Xcode command line tools with Swift 6
 
-## Build and install
+## Install
+
+Download `Maro-Markdown.zip` from [Releases](https://github.com/geeksbaek/maro-markdown/releases), unzip it, and move `Maro Markdown.app` to `/Applications`.
+
+The app is not signed with an Apple Developer ID or notarized, so macOS blocks the first launch with an "unidentified developer" warning. Open it in one of these ways:
+
+- In Finder, **right-click the app → Open**, then click **Open** in the warning.
+- Or remove the download quarantine flag in Terminal:
+
+  ```sh
+  xattr -dr com.apple.quarantine "/Applications/Maro Markdown.app"
+  ```
+
+## Build from source
+
+Requires the Xcode command line tools with Swift 6.
 
 ```sh
 MARO_BUILD_CONFIGURATION=release script/build_and_run.sh --build-only
 ditto "dist/Maro Markdown.app" "/Applications/Maro Markdown.app"
 ```
 
-The script builds with SwiftPM, assembles the app bundle and its Quick Look extension, and signs both ad hoc. Run it without `--build-only` to launch the development build.
+The script builds with SwiftPM, assembles the app bundle and its Quick Look extension, and signs both ad hoc. Run it without `--build-only` to launch the development build. A locally built app has no quarantine flag, so it opens without the warning above.
 
 To make Maro Markdown the default app for `.md` files, select a Markdown file in Finder, choose **Get Info → Open with → Maro Markdown**, and click **Change All…**.
 
@@ -67,7 +83,7 @@ The tests cover the renderer, GitHub alert conversion, heading ids (including 54
 
 - **Quick Look does not show relative images.** The Quick Look extension is sandboxed and can read only the Markdown file itself, so images next to it (`![](images/a.png)`) appear blank in the Space-bar preview. They display normally in the app.
 - Files larger than 4 MB are truncated in the Quick Look preview.
-- Builds are signed ad hoc, not with a Developer ID, and are not notarized. Gatekeeper may block a copy downloaded from elsewhere; build it locally instead.
+- No Developer ID signature or notarization; see Install above.
 
 ## License
 
