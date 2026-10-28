@@ -69,5 +69,9 @@
     window.maroRender();
   });
 
-  window.maroRender();
+  // Hosts that need to know when the page is drawn (Quick Look) register this handler.
+  window.maroRender().finally(function () {
+    var handler = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.maroRendered;
+    if (handler) handler.postMessage(true);
+  });
 })();

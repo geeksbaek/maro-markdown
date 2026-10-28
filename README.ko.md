@@ -11,7 +11,7 @@ GitHub과 같은 방식으로 GitHub Flavored Markdown을 렌더링하는 macOS�
 - GitHub 문법의 수식(`$…$`, `` $`…`$ ``, `$$…$$`, ```` ```math ````)을 KaTeX로 렌더링
 - ```` ```mermaid ```` 블록의 Mermaid 다이어그램, 라이트·다크 모드에 맞춰 표시
 - GitHub의 Markdown 스타일시트, 라이트·다크 모드
-- Finder Quick Look 미리보기: `.md` 파일을 선택하고 스페이스바를 누르면 렌더링된 화면으로 표시
+- Finder Quick Look 미리보기: `.md` 파일을 선택하고 스페이스바를 누르면 수식과 다이어그램까지 렌더링된 화면으로 표시
 - 모드를 바꾸거나 창을 닫을 때 입력기(한국어·일본어·중국어) 조합 중인 글자를 확정해 글자가 사라지지 않음
 - 저장할 때 원래 인코딩 유지 (UTF-8, BOM 있는 UTF-8, UTF-16 LE/BE)
 
@@ -62,7 +62,7 @@ ditto "dist/Maro Markdown.app" "/Applications/Maro Markdown.app"
 swift test
 ```
 
-렌더러, GitHub 알림 변환, 제목 id(GitHub Markdown API에서 실측한 54개 사례 포함), 수식·다이어그램 추출, 화면 밖 WebKit에서 수식과 Mermaid가 그려지고 페이지 스크립트는 막히는지, 텍스트 인코딩, 편집기의 입력기 조합 처리, Quick Look 이미지 경로 처리를 검사합니다.
+렌더러, GitHub 알림 변환, 제목 id(GitHub Markdown API에서 실측한 54개 사례 포함), 수식·다이어그램 추출, 화면 밖 WebKit에서 수식과 Mermaid가 그려지고 페이지 스크립트는 막히는지, 텍스트 인코딩, 편집기의 입력기 조합 처리, Quick Look 페이지의 이미지 처리를 검사합니다.
 
 ## 단축키
 
@@ -84,8 +84,8 @@ swift test
 
 ## 알려진 제한
 
-- **Quick Look에서 상대 경로 이미지가 보이지 않습니다.** Quick Look 확장은 샌드박스 안에서 Markdown 파일 자체만 읽을 수 있어서, 옆에 있는 이미지(`![](images/a.png)`)는 스페이스바 미리보기에서 빈칸으로 나옵니다. 앱에서는 정상으로 보입니다.
-- **Quick Look에서는 수식과 Mermaid가 원문으로 보입니다.** Quick Look은 확장이 렌더링 스크립트를 실행할 방법을 주지 않습니다. 앱에서는 둘 다 렌더링됩니다.
+- **Quick Look에서는 이미지가 자리표시로 보입니다.** Quick Look 확장은 샌드박스 안에서 Markdown 파일 자체만 읽을 수 있고, 원격 이미지를 참조하는 페이지는 그 안에서 로딩이 끝나지 않습니다. 그래서 스페이스바 미리보기에서는 이미지 자리에 대체 텍스트를 보여 줍니다. 앱에서는 이미지가 정상으로 보입니다.
+- Quick Look 확장에는 네트워크 클라이언트 권한이 있지만, WebKit이 샌드박스 안에서 시작하는 데 필요해서입니다. 미리보기 페이지는 네트워크에서 아무것도 불러오지 않습니다.
 - 4 MB보다 큰 파일은 Quick Look 미리보기에서 잘립니다.
 - Developer ID 서명과 공증이 없습니다. 위의 설치 안내를 참고하세요.
 

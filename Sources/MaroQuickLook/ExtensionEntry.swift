@@ -11,8 +11,8 @@ private func NSExtensionMain(
 @main
 enum ExtensionEntry {
     static func main() {
-        // Referencing the provider keeps its Objective-C class linked for lookup by name.
-        _ = PreviewProvider.self
+        // Referencing the controller keeps its Objective-C class linked for lookup by name.
+        _ = PreviewViewController.self
         exit(NSExtensionMain(CommandLine.argc, CommandLine.unsafeArgv))
     }
 }

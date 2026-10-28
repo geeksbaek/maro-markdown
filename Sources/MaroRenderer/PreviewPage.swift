@@ -28,13 +28,16 @@ public enum PreviewPage {
         return result
     }()
 
-    public static func shell(content: String, scale: Double = 1) -> String {
+    /// - Parameter offline: Quick Look passes true, with images already removed by
+    ///   `OfflineImages`, and the CSP then allows only inline `data:` images.
+    public static func shell(content: String, scale: Double = 1, offline: Bool = false) -> String {
+        let imageSources = offline ? "data:" : "'self' file: data: https: http:"
         return """
         <!doctype html>
         <html lang="und"><head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' file: data: https: http:; style-src 'unsafe-inline'; font-src data:; script-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src \(imageSources); style-src 'unsafe-inline'; font-src data:; script-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
           <style>\(css)</style>
           <style>\(katexCSS)</style>
           <style>
@@ -73,6 +76,8 @@ public enum PreviewPage {
             .markdown-body .maro-mermaid:not([data-rendered]) { padding: 16px; border-radius: 6px; line-height: 1.45; white-space: pre; text-align: left; background-color: var(--bgColor-muted, #f6f8fa); }
             .markdown-body .maro-mermaid svg { max-width: 100%; height: auto; }
             .markdown-body .maro-error { color: var(--fgColor-danger, #d1242f); text-align: left; }
+            .markdown-body .maro-image-placeholder { display: inline-block; padding: 2px 8px; border: 1px dashed var(--borderColor-default, #d1d9e0); border-radius: 6px; color: var(--fgColor-muted, #59636e); font-size: 85%; }
+            .markdown-body .maro-image-placeholder::before { content: "🖼 "; }
             @media (max-width: 620px) { .markdown-body { padding: 24px 20px 72px; } }
             @media print { .markdown-body { max-width: none; padding: 0; } }
           </style>
@@ -96,4 +101,7 @@ public enum PreviewScripts {
 
     /// Re-renders math and diagrams after the preview content changes.
     public static let refresh = "window.maroRender && window.maroRender();"
+
+    /// Message handler name render.js posts to after its first render, when a host registers it.
+    public static let renderedMessage = "maroRendered"
 }

@@ -34,7 +34,7 @@ let package = Package(
             name: "MaroQuickLook",
             dependencies: ["MaroRenderer"],
             exclude: ["MaroQuickLook.entitlements"],
-            linkerSettings: [.linkedFramework("QuickLookUI")]
+            linkerSettings: [.linkedFramework("QuickLookUI"), .linkedFramework("WebKit")]
         ),
         .testTarget(
             name: "MaroMarkdownTests",
