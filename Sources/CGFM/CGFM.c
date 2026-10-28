@@ -52,12 +52,16 @@ typedef struct {
 } cgfm_alert_kind;
 
 // GitHub alerts: a top-level block quote whose first line is only the marker.
+#define CGFM_ALERT(marker, kind, title)                                  \
+    {marker, "<div class=\"markdown-alert markdown-alert-" kind "\">\n"   \
+             "<p class=\"markdown-alert-title\">" title "</p>"}
+
 static const cgfm_alert_kind cgfm_alert_kinds[] = {
-    {"[!NOTE]", "<div class=\"markdown-alert markdown-alert-note\">\n<p class=\"markdown-alert-title\">Note</p>"},
-    {"[!TIP]", "<div class=\"markdown-alert markdown-alert-tip\">\n<p class=\"markdown-alert-title\">Tip</p>"},
-    {"[!IMPORTANT]", "<div class=\"markdown-alert markdown-alert-important\">\n<p class=\"markdown-alert-title\">Important</p>"},
-    {"[!WARNING]", "<div class=\"markdown-alert markdown-alert-warning\">\n<p class=\"markdown-alert-title\">Warning</p>"},
-    {"[!CAUTION]", "<div class=\"markdown-alert markdown-alert-caution\">\n<p class=\"markdown-alert-title\">Caution</p>"},
+    CGFM_ALERT("[!NOTE]", "note", "Note"),
+    CGFM_ALERT("[!TIP]", "tip", "Tip"),
+    CGFM_ALERT("[!IMPORTANT]", "important", "Important"),
+    CGFM_ALERT("[!WARNING]", "warning", "Warning"),
+    CGFM_ALERT("[!CAUTION]", "caution", "Caution"),
 };
 
 static const cgfm_alert_kind *cgfm_find_alert_kind(const char *literal) {
@@ -155,6 +159,8 @@ char *cgfm_render_html(const char *markdown_utf8,
         return NULL;
     }
 
+    // CMARK_OPT_UNSAFE stays off: raw HTML is omitted, which HeadingAnchors in
+    // MaroRenderer relies on when it adds heading ids to the rendered HTML.
     cmark_parser *parser = cmark_parser_new(CGFM_OPT_FOOTNOTES);
     if (parser == NULL) {
         return NULL;

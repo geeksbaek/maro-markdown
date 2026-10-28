@@ -181,11 +181,6 @@ struct MarkdownTextEditor: NSViewRepresentable {
             push(textView.string)
         }
 
-        /// Ends any IME composition and writes the editor text to the binding.
-        func commitComposition(in textView: NSTextView) {
-            push(endComposition(in: textView))
-        }
-
         /// Accepts the marked IME text as typed and returns the full editor text.
         func endComposition(in textView: NSTextView) -> String {
             if textView.hasMarkedText() {

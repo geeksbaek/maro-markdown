@@ -6,6 +6,8 @@ APP_NAME="MaroMarkdown"
 DISPLAY_NAME="Maro Markdown"
 BUNDLE_ID="io.github.geeksbaek.maromarkdown"
 MIN_SYSTEM_VERSION="27.0"
+APP_VERSION="1.0.0"
+BUILD_NUMBER="1"
 BUILD_CONFIGURATION="${MARO_BUILD_CONFIGURATION:-debug}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -82,8 +84,8 @@ cat >"$QL_BUNDLE/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>$DISPLAY_NAME Quick Look</string>
   <key>CFBundleDisplayName</key><string>$DISPLAY_NAME</string>
   <key>CFBundlePackageType</key><string>XPC!</string>
-  <key>CFBundleShortVersionString</key><string>1.0.0</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
+  <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
   <key>NSExtension</key>
   <dict>
@@ -101,15 +103,7 @@ cat >"$QL_BUNDLE/Contents/Info.plist" <<PLIST
 PLIST
 
 # Extensions must be sandboxed; the previewed file is granted by Quick Look.
-QL_ENTITLEMENTS="$ROOT_DIR/work/$QL_NAME.entitlements"
-cat >"$QL_ENTITLEMENTS" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>com.apple.security.app-sandbox</key><true/>
-  <key>com.apple.security.files.user-selected.read-only</key><true/>
-</dict></plist>
-PLIST
+QL_ENTITLEMENTS="$ROOT_DIR/Sources/MaroQuickLook/MaroQuickLook.entitlements"
 
 if [[ -f "$ROOT_DIR/Sources/MaroMarkdown/Resources/AppIcon.icns" ]]; then
   cp "$ROOT_DIR/Sources/MaroMarkdown/Resources/AppIcon.icns" "$APP_RESOURCES/AppIcon.icns"
@@ -124,8 +118,8 @@ cat >"$APP_CONTENTS/Info.plist" <<PLIST
   <key>CFBundleName</key><string>$DISPLAY_NAME</string>
   <key>CFBundleDisplayName</key><string>$DISPLAY_NAME</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0.0</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
+  <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>

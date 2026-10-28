@@ -40,7 +40,7 @@ public struct MarkdownRenderer {
 }
 
 /// Gives headings the same `id` slugs that GitHub uses for `#fragment` links.
-public enum HeadingAnchors {
+enum HeadingAnchors {
     // Safe only because cmark-gfm runs without CMARK_OPT_UNSAFE: raw HTML is omitted and
     // code text is escaped, so a literal `<hN` can only come from a real heading.
     // Enabling unsafe HTML would break this assumption.
@@ -50,26 +50,32 @@ public enum HeadingAnchors {
     )
     private static let tag = try! NSRegularExpression(pattern: "<[^>]*>")
 
-    public static func addingIDs(to html: String) -> String {
+    static func addingIDs(to html: String) -> String {
         let source = html as NSString
         let matches = heading.matches(in: html, range: NSRange(location: 0, length: source.length))
         guard !matches.isEmpty else { return html }
 
-        // Slugs are assigned in document order so duplicates get -1, -2 like GitHub.
+        // One forward pass: slugs are assigned in document order (duplicates get -1, -2
+        // like GitHub), and the HTML is copied once instead of shifted per heading.
         var slugger = Slugger()
-        let slugs = matches.map { slugger.slug(plainText(source.substring(with: $0.range(at: 3)))) }
-
-        let result = NSMutableString(string: html)
-        for (match, slug) in zip(matches, slugs).reversed() {
+        var result = ""
+        result.reserveCapacity(html.utf8.count + matches.count * 32)
+        var copied = 0
+        for match in matches {
+            let slug = slugger.slug(plainText(source.substring(with: match.range(at: 3))))
             // Slugs keep only letters, marks, digits, connector punctuation, and "-",
             // so they never contain characters that need HTML escaping.
             guard !slug.isEmpty else { continue }
-            result.insert(" id=\"\(slug)\"", at: match.range(at: 2).location)
+            let insertion = match.range(at: 2).location
+            result += source.substring(with: NSRange(location: copied, length: insertion - copied))
+            result += " id=\"\(slug)\""
+            copied = insertion
         }
-        return result as String
+        result += source.substring(from: copied)
+        return result
     }
 
-    public static func plainText(_ fragment: String) -> String {
+    static func plainText(_ fragment: String) -> String {
         let stripped = tag.stringByReplacingMatches(
             in: fragment,
             range: NSRange(location: 0, length: (fragment as NSString).length),
@@ -85,12 +91,10 @@ public enum HeadingAnchors {
 }
 
 /// Port of github-slugger 2.0.0, the slug algorithm GitHub uses for heading anchors.
-public struct Slugger {
+struct Slugger {
     private var occurrences: [String: Int] = [:]
 
-    public init() {}
-
-    public mutating func slug(_ value: String) -> String {
+    mutating func slug(_ value: String) -> String {
         let original = Self.slug(value)
         var result = original
         while occurrences[result] != nil {
@@ -101,7 +105,7 @@ public struct Slugger {
         return result
     }
 
-    public static func slug(_ value: String) -> String {
+    static func slug(_ value: String) -> String {
         var scalars = String.UnicodeScalarView()
         for scalar in value.lowercased().unicodeScalars where isKept(scalar) {
             scalars.append(scalar == " " ? "-" : scalar)

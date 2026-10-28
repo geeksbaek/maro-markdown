@@ -29,6 +29,7 @@ let package = Package(
         .executableTarget(
             name: "MaroQuickLook",
             dependencies: ["MaroRenderer"],
+            exclude: ["MaroQuickLook.entitlements"],
             linkerSettings: [.linkedFramework("QuickLookUI")]
         ),
         .testTarget(

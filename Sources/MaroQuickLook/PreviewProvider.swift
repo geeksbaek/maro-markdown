@@ -10,7 +10,7 @@ final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
 
     func providePreview(for request: QLFilePreviewRequest) async throws -> QLPreviewReply {
         let data = try Data(contentsOf: request.fileURL, options: .mappedIfSafe)
-        let text = Self.decode(data.prefix(Self.maximumBytes))
+        let text = SourceEncoding.decodeLossily(data.prefix(Self.maximumBytes))
         let body = try MarkdownRenderer.renderHTML(text)
         let page = PreviewPage.shell(content: body)
 
@@ -20,21 +20,5 @@ final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
         reply.stringEncoding = .utf8
         reply.title = request.fileURL.lastPathComponent
         return reply
-    }
-
-    /// Mirrors MarkdownDocument's BOM handling, falling back to lossy UTF-8.
-    static func decode(_ data: Data) -> String {
-        if data.starts(with: [0xEF, 0xBB, 0xBF]) {
-            return String(decoding: data.dropFirst(3), as: UTF8.self)
-        }
-        if data.starts(with: [0xFF, 0xFE]),
-           let value = String(data: data.dropFirst(2), encoding: .utf16LittleEndian) {
-            return value
-        }
-        if data.starts(with: [0xFE, 0xFF]),
-           let value = String(data: data.dropFirst(2), encoding: .utf16BigEndian) {
-            return value
-        }
-        return String(decoding: data, as: UTF8.self)
     }
 }

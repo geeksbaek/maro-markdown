@@ -2,7 +2,7 @@ import Foundation
 
 /// The HTML page around rendered Markdown, shared by the app preview and Quick Look.
 public enum PreviewPage {
-    public static let css: String = Bundle.module.url(forResource: "github-markdown", withExtension: "css")
+    static let css: String = Bundle.module.url(forResource: "github-markdown", withExtension: "css")
         .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
 
     public static func shell(content: String, scale: Double = 1) -> String {

@@ -1,5 +1,5 @@
 import XCTest
-import MaroRenderer
+@testable import MaroRenderer
 
 final class MarkdownRendererTests: XCTestCase {
     func testCJKEmphasisAndGFMExtensions() throws {

@@ -52,7 +52,7 @@ final class MarkdownTextEditorTests: XCTestCase {
                                replacementRange: NSRange(location: NSNotFound, length: 0))
         XCTAssertEqual(box.text, "저장 ")
 
-        coordinator.commitComposition(in: textView)
+        coordinator.push(coordinator.endComposition(in: textView))
         XCTAssertFalse(textView.hasMarkedText())
         XCTAssertEqual(box.text, "저장 직")
     }
