@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Maro Markdown app icon">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#344D6F"/>
+      <stop offset="0.52" stop-color="#1C314B"/>
+      <stop offset="1" stop-color="#0B182B"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EDF7F5"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="26" stdDeviation="30" flood-color="#06101C" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <rect x="27" y="27" width="970" height="970" rx="218" fill="url(#background)"/>
+  <rect x="29" y="29" width="966" height="966" rx="216" fill="none" stroke="#7CA0B2" stroke-opacity="0.22" stroke-width="4"/>
+  <path d="M263 148H701L839 286V799Q839 875 763 875H261Q185 875 185 799V226Q185 148 263 148Z" fill="url(#paper)" filter="url(#shadow)"/>
+  <path d="M701 148V286H839Z" fill="#D5E5E5"/>
+  <path d="M701 148V286H839" fill="none" stroke="#B7CECE" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M285 624V390L395 531L505 390V624" fill="none" stroke="#173647" stroke-width="65" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M685 386V592M608 516L685 593L762 516" fill="none" stroke="#159F99" stroke-width="63" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M289 724H728M289 777H563" fill="none" stroke="#B5CACB" stroke-width="18" stroke-linecap="round"/>
+</svg>
