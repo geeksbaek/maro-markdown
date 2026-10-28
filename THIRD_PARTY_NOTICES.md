@@ -28,7 +28,7 @@ SOFTWARE.
 GitHub Flavored Markdown parsing uses the `libcmark-gfm` library supplied by
 macOS; no copy of that library is bundled with the app.
 
-`Slugger` in `Sources/MaroMarkdown/Services/MarkdownRenderer.swift` reimplements
+`Slugger` in `Sources/MaroRenderer/MarkdownRenderer.swift` reimplements
 the heading slug algorithm of github-slugger 2.0.0
 <https://github.com/Flet/github-slugger>, distributed under the ISC License.
 

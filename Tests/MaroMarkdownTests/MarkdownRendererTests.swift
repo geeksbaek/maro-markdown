@@ -54,12 +54,12 @@ final class MarkdownRendererTests: XCTestCase {
 
         [이동](#제목-)
         """)
-        XCTAssertTrue(html.contains("<h1 id=\"제목-\">제목 🧭</h1>"))
-        XCTAssertTrue(html.contains("<h2 id=\"a--b-code\">"))
-        XCTAssertTrue(html.contains("<h3 id=\"中文-見出し\">"))
-        XCTAssertTrue(html.contains("<h2 id=\"제목--1\">"))
-        XCTAssertTrue(html.contains("<h2 id=\"제목--2\">"))
-        XCTAssertTrue(html.contains("<h2 id=\"ⓐ_x--y\">"))
+        XCTAssertTrue(html.contains("<h1 id=\"user-content-제목-\">제목 🧭</h1>"))
+        XCTAssertTrue(html.contains("<h2 id=\"user-content-a--b-code\">"))
+        XCTAssertTrue(html.contains("<h3 id=\"user-content-中文-見出し\">"))
+        XCTAssertTrue(html.contains("<h2 id=\"user-content-제목--1\">"))
+        XCTAssertTrue(html.contains("<h2 id=\"user-content-제목--2\">"))
+        XCTAssertTrue(html.contains("<h2 id=\"user-content-ⓐ_x--y\">"))
         XCTAssertTrue(html.contains("<h1>🚀</h1>"))
         // The preview percent-decodes the fragment before looking up the id.
         XCTAssertTrue(html.contains("href=\"#%EC%A0%9C%EB%AA%A9-\""))
@@ -77,14 +77,21 @@ final class MarkdownRendererTests: XCTestCase {
         ## ![그림](a.png) 이미지
         """)
         XCTAssertTrue(html.contains("<h1>🚀</h1>"))
-        XCTAssertTrue(html.contains("<h1 id=\"-1\">🚀</h1>"))
-        XCTAssertTrue(html.contains("<h2 id=\"링크-제목\">"))
-        XCTAssertTrue(html.contains("<h2 id=\"-이미지\">"))
+        XCTAssertTrue(html.contains("<h1 id=\"user-content--1\">🚀</h1>"))
+        XCTAssertTrue(html.contains("<h2 id=\"user-content-링크-제목\">"))
+        XCTAssertTrue(html.contains("<h2 id=\"user-content--이미지\">"))
+    }
+
+    func testHeadingIDsCannotCollideWithPageOrFootnoteIDs() throws {
+        let html = try MarkdownRenderer.renderHTML("# Markdown\n\n# fn-1\n\n각주[^1]\n\n[^1]: 내용")
+        XCTAssertTrue(html.contains("<h1 id=\"user-content-markdown\">"))
+        XCTAssertTrue(html.contains("<h1 id=\"user-content-fn-1\">"))
+        XCTAssertTrue(html.contains("<li id=\"fn-1\">"))
     }
 
     func testHeadingIDsWithSourcePositions() throws {
         let html = try MarkdownRenderer.renderHTML("# 한글", includeSourcePositions: true)
-        XCTAssertTrue(html.contains("<h1 id=\"한글\" data-sourcepos=\"1:1-1:8\">한글</h1>"))
+        XCTAssertTrue(html.contains("<h1 id=\"user-content-한글\" data-sourcepos=\"1:1-1:8\">한글</h1>"))
     }
 
     func testSluggerMatchesGitHubSluggerCases() {

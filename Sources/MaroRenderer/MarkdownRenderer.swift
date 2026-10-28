@@ -40,7 +40,11 @@ public struct MarkdownRenderer {
 }
 
 /// Gives headings the same `id` slugs that GitHub uses for `#fragment` links.
-enum HeadingAnchors {
+public enum HeadingAnchors {
+    /// Like GitHub, heading ids carry this prefix so they cannot collide with the page's
+    /// own ids or footnote ids; `#slug` links resolve to `user-content-slug`.
+    public static let idPrefix = "user-content-"
+
     // Safe only because cmark-gfm runs without CMARK_OPT_UNSAFE: raw HTML is omitted and
     // code text is escaped, so a literal `<hN` can only come from a real heading.
     // Enabling unsafe HTML would break this assumption.
@@ -68,7 +72,7 @@ enum HeadingAnchors {
             guard !slug.isEmpty else { continue }
             let insertion = match.range(at: 2).location
             result += source.substring(with: NSRange(location: copied, length: insertion - copied))
-            result += " id=\"\(slug)\""
+            result += " id=\"\(idPrefix)\(slug)\""
             copied = insertion
         }
         result += source.substring(from: copied)
@@ -90,19 +94,24 @@ enum HeadingAnchors {
     }
 }
 
-/// Port of github-slugger 2.0.0, the slug algorithm GitHub uses for heading anchors.
+/// GitHub's heading slug algorithm (github-slugger), with the character rule
+/// measured against GitHub's Markdown API rather than taken from github-slugger's table.
 struct Slugger {
-    private var occurrences: [String: Int] = [:]
+    // Keyed by scalars, not String: Swift's String equality treats NFC and NFD as equal,
+    // but GitHub gives "café" and "cafe\u{301}" separate slugs without a -1 suffix.
+    private var occurrences: [[Unicode.Scalar]: Int] = [:]
 
     mutating func slug(_ value: String) -> String {
-        let original = Self.slug(value)
+        let original = Array(Self.slug(value).unicodeScalars)
         var result = original
         while occurrences[result] != nil {
             occurrences[original, default: 0] += 1
-            result = "\(original)-\(occurrences[original]!)"
+            result = original + "-\(occurrences[original]!)".unicodeScalars
         }
         occurrences[result] = 0
-        return result
+        var view = String.UnicodeScalarView()
+        view.append(contentsOf: result)
+        return String(view)
     }
 
     static func slug(_ value: String) -> String {
@@ -113,14 +122,14 @@ struct Slugger {
         return String(scalars)
     }
 
+    /// GitHub keeps alphabetic characters (which includes circled and squared Latin
+    /// letters), marks, digits, connector punctuation, ZWNJ/ZWJ, "-" and spaces.
     private static func isKept(_ scalar: Unicode.Scalar) -> Bool {
         if scalar == " " || scalar == "-" { return true }
-        // Circled Latin letters are symbols that github-slugger still keeps.
-        if (0x24B6...0x24E9).contains(scalar.value) { return true }
-        switch scalar.properties.generalCategory {
-        case .uppercaseLetter, .lowercaseLetter, .titlecaseLetter, .modifierLetter, .otherLetter,
-             .nonspacingMark, .spacingMark, .enclosingMark,
-             .decimalNumber, .letterNumber, .connectorPunctuation:
+        let properties = scalar.properties
+        if properties.isAlphabetic || properties.isJoinControl { return true }
+        switch properties.generalCategory {
+        case .nonspacingMark, .spacingMark, .enclosingMark, .decimalNumber, .connectorPunctuation:
             return true
         default:
             return false

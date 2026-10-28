@@ -9,6 +9,11 @@ struct MarkdownPreview: NSViewRepresentable {
     let fileURL: URL?
     var fontSize: CGFloat = 16
 
+    /// The preview CSS is sized for 16 px, so the font size becomes a clamped scale factor.
+    private var previewScale: Double {
+        min(max(Double(fontSize) / 16, 0.75), 2)
+    }
+
     func makeCoordinator() -> Coordinator {
         Coordinator()
     }
@@ -25,7 +30,7 @@ struct MarkdownPreview: NSViewRepresentable {
         context.coordinator.webView = view
         context.coordinator.baseURL = fileURL?.deletingLastPathComponent()
         context.coordinator.pendingHTML = html
-        context.coordinator.pendingFontScale = min(max(Double(fontSize) / 16, 0.75), 2)
+        context.coordinator.pendingFontScale = previewScale
         context.coordinator.lastHTML = html
         context.coordinator.lastFontScale = context.coordinator.pendingFontScale
         view.loadHTMLString(PreviewPage.shell(content: html, scale: context.coordinator.pendingFontScale),
@@ -40,12 +45,12 @@ struct MarkdownPreview: NSViewRepresentable {
             coordinator.baseURL = nextBaseURL
             coordinator.ready = false
             coordinator.lastHTML = nil
-            view.loadHTMLString(PreviewPage.shell(content: html, scale: min(max(Double(fontSize) / 16, 0.75), 2)),
+            view.loadHTMLString(PreviewPage.shell(content: html, scale: previewScale),
                                 baseURL: nextBaseURL)
         }
 
         coordinator.pendingHTML = html
-        coordinator.pendingFontScale = min(max(Double(fontSize) / 16, 0.75), 2)
+        coordinator.pendingFontScale = previewScale
         coordinator.flushIfReady()
     }
 
@@ -118,9 +123,17 @@ struct MarkdownPreview: NSViewRepresentable {
             if let fragment = url.fragment,
                url.scheme == "about" || (url.isFileURL && url.path == baseURL?.path) {
                 let identifier = fragment.removingPercentEncoding ?? fragment
-                if let encoded = try? JSONEncoder().encode(identifier),
+                // Headings use GitHub's prefixed ids; footnotes keep cmark's bare ids.
+                if let encoded = try? JSONEncoder().encode([HeadingAnchors.idPrefix + identifier, identifier]),
                    let literal = String(data: encoded, encoding: .utf8) {
-                    webView.evaluateJavaScript("document.getElementById(\(literal))?.scrollIntoView({behavior:'smooth'});", completionHandler: nil)
+                    webView.evaluateJavaScript("""
+                    (() => {
+                      const root = document.getElementById('markdown');
+                      const target = \(literal).map(id => document.getElementById(id))
+                        .find(node => node && node !== root);
+                      target?.scrollIntoView({behavior: 'smooth'});
+                    })();
+                    """, completionHandler: nil)
                 }
                 return false
             }
