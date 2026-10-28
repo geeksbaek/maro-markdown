@@ -21,7 +21,8 @@ let package = Package(
                 .process("Resources/github-markdown.css"),
                 // KaTeX, Mermaid and the preview renderer, kept as-is with their folder layout.
                 .copy("Resources/vendor")
-            ]
+            ],
+            linkerSettings: [.linkedFramework("WebKit")]
         ),
         .executableTarget(
             name: "MaroMarkdown",
@@ -34,7 +35,7 @@ let package = Package(
             name: "MaroQuickLook",
             dependencies: ["MaroRenderer"],
             exclude: ["MaroQuickLook.entitlements"],
-            linkerSettings: [.linkedFramework("QuickLookUI")]
+            linkerSettings: [.linkedFramework("QuickLookUI"), .linkedFramework("WebKit")]
         ),
         .testTarget(
             name: "MaroMarkdownTests",

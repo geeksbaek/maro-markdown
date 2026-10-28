@@ -11,7 +11,7 @@ A native macOS Markdown editor and viewer that renders GitHub Flavored Markdown 
 - Math with GitHub's syntax (`$…$`, `` $`…`$ ``, `$$…$$`, ```` ```math ````), rendered by KaTeX
 - Mermaid diagrams in ```` ```mermaid ```` blocks, following light and dark mode
 - GitHub's Markdown stylesheet, in light and dark mode
-- Finder Quick Look preview: press Space on a `.md` file to see it rendered
+- Finder Quick Look preview: press Space on a `.md` file to see it rendered, math and diagrams included
 - Input method composition (Korean, Japanese, Chinese) is committed before a mode switch or window close, so no characters are lost
 - Preserves the file's encoding on save (UTF-8, UTF-8 with BOM, UTF-16 LE/BE)
 
@@ -62,7 +62,7 @@ and check that Maro Markdown is enabled in **System Settings → General → Log
 swift test
 ```
 
-The tests cover the renderer, GitHub alert conversion, heading ids (including 54 cases captured from GitHub's Markdown API), math and diagram extraction, an offscreen WebKit check that math and Mermaid render while page scripts stay blocked, text encodings, input method composition in the editor, and Quick Look image path handling.
+The tests cover the renderer, GitHub alert conversion, heading ids (including 54 cases captured from GitHub's Markdown API), math and diagram extraction, an offscreen WebKit check that math and Mermaid render while page scripts stay blocked, text encodings, input method composition in the editor, and the image handling of the Quick Look page.
 
 ## Keyboard shortcuts
 
@@ -84,8 +84,8 @@ The tests cover the renderer, GitHub alert conversion, heading ids (including 54
 
 ## Known limitations
 
-- **Quick Look does not show relative images.** The Quick Look extension is sandboxed and can read only the Markdown file itself, so images next to it (`![](images/a.png)`) appear blank in the Space-bar preview. They display normally in the app.
-- **Quick Look shows math and Mermaid as source text.** Quick Look gives the extension no way to run the rendering scripts. Both render in the app.
+- **Quick Look shows images as placeholders.** The Quick Look extension is sandboxed: it can read only the Markdown file itself, and a page that references a remote image never finishes loading there. So the Space-bar preview shows each image's alt text in its place. Images display normally in the app.
+- The Quick Look extension has the network-client entitlement only because WebKit needs it to start inside the sandbox. The preview page loads nothing from the network.
 - Files larger than 4 MB are truncated in the Quick Look preview.
 - No Developer ID signature or notarization; see Install above.
 

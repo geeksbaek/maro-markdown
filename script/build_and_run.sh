@@ -6,8 +6,8 @@ APP_NAME="MaroMarkdown"
 DISPLAY_NAME="Maro Markdown"
 BUNDLE_ID="io.github.geeksbaek.maromarkdown"
 MIN_SYSTEM_VERSION="27.0"
-APP_VERSION="1.1.1"
-BUILD_NUMBER="3"
+APP_VERSION="1.2.0"
+BUILD_NUMBER="4"
 BUILD_CONFIGURATION="${MARO_BUILD_CONFIGURATION:-debug}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -74,9 +74,6 @@ QL_BUNDLE="$APP_CONTENTS/PlugIns/$QL_NAME.appex"
 mkdir -p "$QL_BUNDLE/Contents/MacOS" "$QL_BUNDLE/Contents/Resources"
 cp "$BUILD_DIR/$QL_NAME" "$QL_BUNDLE/Contents/MacOS/$QL_NAME"
 copy_resource_bundle MaroMarkdown_MaroRenderer "$QL_BUNDLE/Contents/Resources"
-# Quick Look cannot run the preview scripts, so only KaTeX's stylesheet and fonts are kept.
-QL_VENDOR="$QL_BUNDLE/Contents/Resources/MaroMarkdown_MaroRenderer.bundle/Contents/Resources/vendor"
-rm -rf "$QL_VENDOR/mermaid" "$QL_VENDOR/render.js" "$QL_VENDOR/katex/katex.min.js"
 
 cat >"$QL_BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -93,10 +90,10 @@ cat >"$QL_BUNDLE/Contents/Info.plist" <<PLIST
   <key>NSExtension</key>
   <dict>
     <key>NSExtensionPointIdentifier</key><string>com.apple.quicklook.preview</string>
-    <key>NSExtensionPrincipalClass</key><string>$QL_NAME.PreviewProvider</string>
+    <key>NSExtensionPrincipalClass</key><string>$QL_NAME.PreviewViewController</string>
     <key>NSExtensionAttributes</key>
     <dict>
-      <key>QLIsDataBasedPreview</key><true/>
+      <key>QLIsDataBasedPreview</key><false/>
       <key>QLSupportsSearchableItems</key><false/>
       <key>QLSupportedContentTypes</key>
       <array><string>net.daringfireball.markdown</string></array>

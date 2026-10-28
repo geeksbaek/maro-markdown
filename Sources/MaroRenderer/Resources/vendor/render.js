@@ -69,5 +69,6 @@
     window.maroRender();
   });
 
-  window.maroRender();
+  // Hosts that need to know when the page is drawn (Quick Look) await this promise.
+  window.maroReady = window.maroRender().catch(function () {});
 })();
