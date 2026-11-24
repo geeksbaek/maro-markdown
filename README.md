@@ -4,7 +4,8 @@ English | [한국어](README.ko.md)
 
 A native macOS Markdown editor and viewer that renders GitHub Flavored Markdown the way GitHub does, with careful handling of Korean, Japanese, and Chinese text.
 
-- Edit, side-by-side, and preview modes
+- Edit, side-by-side, and preview modes; documents open in preview
+- Reloads an open document when another app changes the file, and asks first if the window has unsaved edits
 - GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks, footnotes
 - GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`)
 - Heading anchors with the same ids GitHub generates, so `#heading` links work

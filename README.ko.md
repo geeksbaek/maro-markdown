@@ -4,7 +4,8 @@
 
 GitHub과 같은 방식으로 GitHub Flavored Markdown을 렌더링하는 macOS용 Markdown 편집기 겸 뷰어입니다. 한국어·일본어·중국어 입력과 표시를 세심하게 다룹니다.
 
-- 편집, 나란히 보기, 미리보기 모드
+- 편집, 나란히 보기, 미리보기 모드. 문서는 미리보기로 열림
+- 다른 앱이 열린 파일을 바꾸면 자동으로 다시 불러옴. 창에 저장하지 않은 수정이 있으면 먼저 물어봄
 - GitHub Flavored Markdown: 표, 작업 목록, 취소선, 자동 링크, 각주
 - GitHub 알림 (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`)
 - GitHub과 같은 제목 앵커 id를 만들어 `#제목` 링크가 그대로 동작

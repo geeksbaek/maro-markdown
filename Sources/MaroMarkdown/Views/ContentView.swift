@@ -1,3 +1,4 @@
+import AppKit
 import MaroRenderer
 import SwiftUI
 
@@ -6,14 +7,16 @@ struct ContentView: View {
     let fileURL: URL?
 
     @StateObject private var editor = EditorController()
-    @SceneStorage("editorMode") private var editorMode = EditorMode.split.rawValue
+    @SceneStorage("editorMode") private var editorMode = EditorMode.preview.rawValue
     @AppStorage("editorFontSize") private var editorFontSize = 15.0
     @AppStorage("previewFontSize") private var previewFontSize = 16.0
     @State private var renderedHTML = ""
     @State private var renderError: String?
+    /// The file changed on disk while this window had unsaved edits.
+    @State private var diskChangePending = false
 
     private var mode: EditorMode {
-        EditorMode(rawValue: editorMode) ?? .split
+        EditorMode(rawValue: editorMode) ?? .preview
     }
 
     private var lineCount: Int {
@@ -37,6 +40,9 @@ struct ContentView: View {
                 case .preview:
                     previewPane
                 }
+            }
+            if diskChangePending {
+                diskChangeBar
             }
             statusBar
         }
@@ -85,6 +91,16 @@ struct ContentView: View {
             }
         }
         .focusedValue(\.markdownEditor, editor)
+        .task(id: fileURL) {
+            diskChangePending = false
+            guard let fileURL else { return }
+            for await _ in FileWatcher.changes(at: fileURL) {
+                // Let a write in progress finish before reading the file.
+                try? await Task.sleep(for: .milliseconds(150))
+                if Task.isCancelled { return }
+                reloadFromDisk(fileURL)
+            }
+        }
         .task(id: document.text) {
             do {
                 try await Task.sleep(for: .milliseconds(140))
@@ -97,6 +113,67 @@ struct ContentView: View {
                 renderError = error.localizedDescription
             }
         }
+    }
+
+    /// Reloads the file after another app changed it. Unsaved edits in this
+    /// window are never replaced without asking.
+    private func reloadFromDisk(_ url: URL, discardingEdits: Bool = false) {
+        guard let data = try? Data(contentsOf: url),
+              let decoded = SourceEncoding.decode(data) else { return }
+        let fileDocument = NSDocumentController.shared.document(for: url)
+        let diskDate = try? url.resourceValues(forKeys: [.contentModificationDateKey])
+            .contentModificationDate
+        let change = DiskChange.decide(
+            diskText: decoded.text,
+            windowText: document.text,
+            diskDate: diskDate,
+            lastSaveDate: fileDocument?.fileModificationDate,
+            hasUnsavedEdits: fileDocument?.isDocumentEdited ?? false,
+            discardingEdits: discardingEdits
+        )
+        switch change {
+        case .upToDate:
+            diskChangePending = false
+            return
+        case .ownSave:
+            return
+        case .conflict:
+            diskChangePending = true
+            return
+        case .reload:
+            break
+        }
+        guard let fileDocument else {
+            document.text = decoded.text
+            diskChangePending = false
+            return
+        }
+
+        do {
+            // Reverting reads the file through MarkdownDocument, keeping its
+            // encoding, and leaves the document without unsaved changes.
+            try fileDocument.revert(toContentsOf: url, ofType: fileDocument.fileType ?? "net.daringfireball.markdown")
+            diskChangePending = false
+        } catch {
+            fileDocument.presentError(error)
+        }
+    }
+
+    private var diskChangeBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
+            Text("다른 앱에서 파일이 바뀌었습니다. 저장하지 않은 수정이 있어 다시 불러오지 않았습니다.")
+                .lineLimit(2)
+            Spacer()
+            Button("수정 유지") { diskChangePending = false }
+            Button("다시 불러오기") {
+                if let fileURL { reloadFromDisk(fileURL, discardingEdits: true) }
+            }
+        }
+        .font(.system(size: 12))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.yellow.opacity(0.18))
     }
 
     private var editorPane: some View {
